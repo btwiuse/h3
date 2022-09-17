@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"io"
 	"log"
 	"net/http"
 
@@ -10,7 +12,12 @@ import (
 )
 
 func handleConn(conn *webtransport.Session) {
-	log.Println("new conn")
+	log.Println("new conn", conn.RemoteAddr())
+	stream, err := conn.AcceptStream(context.TODO())
+	if err != nil {
+		log.Println("error accepting stream")
+	}
+	io.Copy(stream, stream)
 }
 
 func makeServer(port, cert, key string) *Server {
