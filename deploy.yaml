@@ -32,6 +32,10 @@ spec:
         - |
           # k0s agent
           h3 server
+        ports:
+        - containerPort: 8443
+          hostPort: 443
+          protocol: UDP
         env:
         - name: PORT
           value: "8443"

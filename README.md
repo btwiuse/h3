@@ -37,11 +37,11 @@ BTW I USE ARCH
 BTW I USE ARCH
 ```
 
-## Connect to public demo server at https://h3.k0s.io:32443
+## Connect to public demo server at https://h3.k0s.io:443
 
 ```
-$ env HOST=h3.k0s.io PORT=32443 h3 client
-2022/09/17 18:45:44 dialing https://h3.k0s.io:32443/echo (UDP)
+$ env HOST=h3.k0s.io PORT=443 h3 client
+2022/09/17 18:45:44 dialing https://h3.k0s.io:443/echo (UDP)
 2022/09/17 18:45:45 new conn [::]:36805
 BTW I USE ARCH
 BTW I USE ARCH
@@ -49,4 +49,5 @@ BTW I USE ARCH
 
 ## TODO
 
-- [ ] Figure how how to expose the HTTP/3 server through traefik ingress (needs help)
+- [ ] Figure how how to expose the HTTP/3 server through traefik ingress, rather
+      that `hostPort` (help wanted)
