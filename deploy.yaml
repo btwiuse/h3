@@ -1,0 +1,99 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: h3.k0s.io
+spec:
+  secretName: h3.k0s.io
+  dnsNames:
+  - 'h3.k0s.io'
+  issuerRef:
+    name: letsencrypt
+    # We can reference ClusterIssuers by changing the kind here.
+    # The default value is Issuer (i.e. a locally namespaced Issuer)
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: h3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: h3
+  template:
+    metadata:
+      labels:
+        app: h3
+    spec:
+      containers:
+      - args:
+        - |
+          # k0s agent
+          h3 server
+        env:
+        - name: PORT
+          value: "8443"
+        - name: HOST
+          value: h3.k0s.io
+        - name: CERT
+          value: tls.crt
+        - name: KEY
+          value: tls.key
+        command:
+        - bash
+        - -c
+        image: btwiuse/h3
+        imagePullPolicy: Always
+        name: h3
+        volumeMounts:
+        - mountPath: /h3
+          name: h3
+      restartPolicy: Always
+      volumes:
+      - secret:
+          secretName: h3.k0s.io
+        name: h3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: h3
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ports:
+  - port: 443
+    protocol: UDP
+    targetPort: 8443
+    nodePort: 32443
+  selector:
+    app: h3
+  sessionAffinity: None
+  type: NodePort
+---
+# TODO How to make traefik ingress work with http3?
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   annotations:
+#     kubernetes.io/ingress.class: traefik
+#   name: h3.k0s.io
+# spec:
+#   rules:
+#   - host: h3.k0s.io
+#     http:
+#       paths:
+#       - backend:
+#           service:
+#             name: h3
+#             port:
+#               number: 443
+#         path: /
+#         pathType: ImplementationSpecific
+#   tls:
+#   - hosts:
+#     - h3.k0s.io
+#     secretName: h3
