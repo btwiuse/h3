@@ -18,7 +18,7 @@ func EnvKEY(fallback string) string {
 
 func EnvHOST(fallback string) string {
 	if host, ok := os.LookupEnv("HOST"); ok {
-		return ":" + host
+		return host
 	}
 	return fallback
 }
