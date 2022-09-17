@@ -43,7 +43,7 @@ func (s *Server) ListenAndServeTLS() error {
 }
 
 func (s *Server) HandleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
-	http.HandleFunc("/echo", handler)
+	http.HandleFunc(path, handler)
 }
 
 func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
@@ -54,6 +54,10 @@ func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go echoConn(conn)
+}
+
+func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "HTTP/3 OK", 200)
 }
 
 func echoConn(conn *webtransport.Session) {
@@ -73,6 +77,7 @@ func Run([]string) error {
 		utils.EnvCERT("localhost.pem"),
 		utils.EnvKEY("localhost-key.pem"),
 	)
+	s.HandleFunc("/", s.handleRoot)
 	s.HandleFunc("/echo", s.handleEcho)
 	return s.ListenAndServeTLS()
 }
