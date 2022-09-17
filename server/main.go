@@ -10,6 +10,7 @@ import (
 	"github.com/btwiuse/h3/utils"
 	"github.com/lucas-clemente/quic-go/http3"
 	"github.com/marten-seemann/webtransport-go"
+	"k0s.io/pkg/middleware"
 )
 
 func makeServer(host, port, cert, key string) *Server {
@@ -49,6 +50,10 @@ func (s *Server) ListenAndServeTLS() error {
 	return err
 }
 
+func (s *Server) Handle(path string, handler http.Handler) {
+	http.Handle(path, handler)
+}
+
 func (s *Server) HandleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
 	http.HandleFunc(path, handler)
 }
@@ -82,6 +87,12 @@ func echoConn(conn *webtransport.Session) {
 	io.Copy(stream, stream)
 }
 
+func ApplyMiddleware(next http.Handler) http.Handler {
+	return middleware.LoggingMiddleware(
+		middleware.AllowAllCorsMiddleware(next),
+	)
+}
+
 func Run([]string) error {
 	s := makeServer(
 		utils.EnvHOST("localhost"),
@@ -89,7 +100,7 @@ func Run([]string) error {
 		utils.EnvCERT("localhost.pem"),
 		utils.EnvKEY("localhost-key.pem"),
 	)
-	s.HandleFunc("/", s.handleRoot)
-	s.HandleFunc("/echo", s.handleEcho)
+	s.Handle("/", ApplyMiddleware(http.HandlerFunc(s.handleRoot)))
+	s.Handle("/echo", ApplyMiddleware(http.HandlerFunc(s.handleEcho)))
 	return s.ListenAndServeTLS()
 }
