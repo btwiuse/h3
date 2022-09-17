@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/marten-seemann/webtransport-go"
 )
 
-func main() {
+func Run([]string) error {
 	u := fmt.Sprintf(
 		"https://%s%s/echo",
 		utils.EnvHOST("localhost"),
@@ -27,6 +27,7 @@ func main() {
 	}
 	_ = resp
 	handleConn(conn)
+	return nil
 }
 
 func handleConn(conn *webtransport.Session) {
@@ -38,4 +39,3 @@ func handleConn(conn *webtransport.Session) {
 	go io.Copy(os.Stdout, stream)
 	io.Copy(stream, os.Stdin)
 }
-

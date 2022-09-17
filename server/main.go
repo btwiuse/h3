@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -66,7 +66,7 @@ func echoConn(conn *webtransport.Session) {
 	io.Copy(stream, stream)
 }
 
-func main() {
+func Run([]string) error {
 	s := makeServer(
 		utils.EnvHOST("localhost"),
 		utils.EnvPORT(":443"),
@@ -74,5 +74,5 @@ func main() {
 		utils.EnvKEY("localhost-key.pem"),
 	)
 	s.HandleFunc("/echo", s.handleEcho)
-	s.ListenAndServeTLS()
+	return s.ListenAndServeTLS()
 }
