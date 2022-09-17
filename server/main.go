@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -36,7 +37,7 @@ type Server struct {
 }
 
 func (s *Server) ListenAndServeTLS() error {
-	go func(){
+	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/", s.handleHTTP1)
 		log.Printf("listening on http://%s%s (TCP)", s.Host, s.Port)
@@ -53,6 +54,7 @@ func (s *Server) HandleFunc(path string, handler func(http.ResponseWriter, *http
 }
 
 func (s *Server) handleHTTP1(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Alt-Svc", fmt.Sprintf(`h3="%s"`, s.Port))
 	http.Error(w, "HTTP/1.1 OK", 200)
 }
 
