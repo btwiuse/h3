@@ -18,6 +18,9 @@ func makeServer(host, port, cert, key string) *Server {
 		H3: http3.Server{
 			Addr: port,
 		},
+		CheckOrigin: func(*http.Request) bool {
+			return true
+		},
 	}
 	return &Server{
 		Server: server,
