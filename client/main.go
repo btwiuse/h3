@@ -32,9 +32,11 @@ func Run([]string) error {
 
 func handleConn(conn *webtransport.Session) {
 	log.Println("new conn", conn.LocalAddr())
-	stream, err := conn.OpenStream()
+	ctx, _ := context.WithTimeout(context.TODO(), time.Second)
+	stream, err := conn.OpenStreamSync(ctx)
 	if err != nil {
 		log.Println("error opening stream:", err)
+		return
 	}
 	go io.Copy(os.Stdout, stream)
 	io.Copy(stream, os.Stdin)

@@ -80,17 +80,21 @@ func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func echoConn(conn *webtransport.Session) {
-	log.Println("new conn", conn.RemoteAddr())
-	stream, err := conn.AcceptStream(context.TODO())
-	if err != nil {
-		log.Println("error accepting stream")
-		return
+	log.Println(conn.RemoteAddr(), "new session")
+	ctx := context.Background()
+	for {
+		stream, err := conn.AcceptStream(ctx)
+		if err != nil {
+			log.Println(conn.RemoteAddr(), "session closed")
+			break
+		}
+		log.Println(conn.RemoteAddr(), "new stream")
+		go io.Copy(stream, stream)
 	}
-	io.Copy(stream, stream)
 }
 
 func ApplyMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println("[H3]", r.RemoteAddr, "->", r.URL.Path)
 		next.ServeHTTP(w, r)
 	})

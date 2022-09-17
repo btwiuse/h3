@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	err := Run(os.Args)
 	if err != nil {
 		log.Fatalln(err)
