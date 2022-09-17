@@ -37,7 +37,7 @@ BTW I USE ARCH
 BTW I USE ARCH
 ```
 
-## Connect to public demo server at https://h3.k0s.io:443
+## Connect to public demo server at [h3.k0s.io](https://h3.k0s.io)
 
 ```
 $ env HOST=h3.k0s.io PORT=443 h3 client
@@ -45,6 +45,23 @@ $ env HOST=h3.k0s.io PORT=443 h3 client
 2022/09/17 18:45:45 new conn [::]:36805
 BTW I USE ARCH
 BTW I USE ARCH
+```
+
+## Test HTTP/3 against demo server with `curl`
+
+```
+$ curl3 -s https://h3.k0s.io -I --http3
+HTTP/3 200
+content-type: text/plain; charset=utf-8
+x-content-type-options: nosniff
+
+$ curl3 -s https://h3.k0s.io -I
+HTTP/2 200
+alt-svc: h3=":443"
+content-type: text/plain; charset=utf-8
+date: Sat, 17 Sep 2022 15:44:28 GMT
+x-content-type-options: nosniff
+content-length: 12
 ```
 
 ## TODO
