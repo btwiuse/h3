@@ -10,7 +10,6 @@ import (
 	"github.com/btwiuse/h3/utils"
 	"github.com/lucas-clemente/quic-go/http3"
 	"github.com/marten-seemann/webtransport-go"
-	"k0s.io/pkg/middleware"
 )
 
 func makeServer(host, port, cert, key string) *Server {
@@ -91,9 +90,10 @@ func echoConn(conn *webtransport.Session) {
 }
 
 func ApplyMiddleware(next http.Handler) http.Handler {
-	return middleware.LoggingMiddleware(
-		middleware.AllowAllCorsMiddleware(next),
-	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		log.Println("[H3]", r.RemoteAddr, "->", r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func Run([]string) error {
