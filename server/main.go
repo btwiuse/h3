@@ -36,6 +36,12 @@ type Server struct {
 }
 
 func (s *Server) ListenAndServeTLS() error {
+	go func(){
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", s.handleHTTP1)
+		log.Printf("listening on http://%s%s (TCP)", s.Host, s.Port)
+		http.ListenAndServe(s.Port, mux)
+	}()
 	log.Printf("listening on https://%s%s (UDP)", s.Host, s.Port)
 	err := s.Server.ListenAndServeTLS(s.Cert, s.Key)
 	log.Fatalln(err)
@@ -44,6 +50,10 @@ func (s *Server) ListenAndServeTLS() error {
 
 func (s *Server) HandleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
 	http.HandleFunc(path, handler)
+}
+
+func (s *Server) handleHTTP1(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "HTTP/1.1 OK", 200)
 }
 
 func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
