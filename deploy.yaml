@@ -29,6 +29,22 @@ spec:
       labels:
         app: h3
     spec:
+      hostNetwork: true
+      initContainers:
+      - args:
+        - |
+          # k0s agent
+          chroot /chroot sysctl -w net.core.rmem_max=2500000
+        securityContext:
+          runAsUser: 0
+        command:
+        - bash
+        - -c
+        image: btwiuse/h3
+        name: h3-init
+        volumeMounts:
+        - mountPath: /chroot
+          name: chroot
       containers:
       - args:
         - |
@@ -40,6 +56,10 @@ spec:
           protocol: UDP
         - containerPort: 443
           protocol: TCP
+      # securityContext:
+      #   sysctls:
+      #   - name: net.core.rmem_max
+      #     value: "2500000"
         env:
         - name: PORT
           value: "443"
@@ -63,6 +83,9 @@ spec:
       - secret:
           secretName: h3.k0s.io
         name: h3
+      - hostPath:
+          path: /
+        name: chroot
 ---
 apiVersion: v1
 kind: Service
