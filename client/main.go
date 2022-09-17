@@ -6,10 +6,28 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/btwiuse/h3/utils"
 	"github.com/marten-seemann/webtransport-go"
 )
+
+func main() {
+	u := fmt.Sprintf(
+		"https://%s%s/echo",
+		utils.EnvHOST("localhost"),
+		utils.EnvPORT(":443"),
+	)
+	ctx, _ := context.WithTimeout(context.TODO(), time.Second)
+	var d webtransport.Dialer
+	log.Printf("dialing %s (UDP)", u)
+	resp, conn, err := d.Dial(ctx, u, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	_ = resp
+	handleConn(conn)
+}
 
 func handleConn(conn *webtransport.Session) {
 	log.Println("new conn", conn.LocalAddr())
@@ -21,12 +39,3 @@ func handleConn(conn *webtransport.Session) {
 	io.Copy(stream, os.Stdin)
 }
 
-func main() {
-	var d webtransport.Dialer
-	resp, conn, err := d.Dial(context.TODO(), fmt.Sprintf("https://localhost%s/echo", utils.EnvPORT(":443")), nil)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	_ = resp
-	handleConn(conn)
-}

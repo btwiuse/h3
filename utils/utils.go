@@ -16,6 +16,13 @@ func EnvKEY(fallback string) string {
 	return fallback
 }
 
+func EnvHOST(fallback string) string {
+	if host, ok := os.LookupEnv("HOST"); ok {
+		return ":" + host
+	}
+	return fallback
+}
+
 func EnvPORT(fallback string) string {
 	if port, ok := os.LookupEnv("PORT"); ok {
 		return ":" + port

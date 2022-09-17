@@ -6,15 +6,16 @@ server
 
 ```
 $ env PORT=8443 go run ./server/
-2022/09/17 15:31:45 listening on https://localhost:8443
-2022/09/17 15:33:11 new conn 127.0.0.1:55794
+2022/09/17 16:16:10 listening on https://localhost:8443 (UDP)
+2022/09/17 16:16:13 new conn 127.0.0.1:45394
 ```
 
 client
 
 ```
 $ env PORT=8443 go run ./client/
-2022/09/17 15:33:11 new conn [::]:55794
+2022/09/17 16:16:13 dialing https://localhost:8443/echo (UDP)
+2022/09/17 16:16:13 new conn [::]:45394
 btw
 btw
 i
