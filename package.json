@@ -1,0 +1,19 @@
+{
+  "name": "@btwiuse/h3",
+  "version": "1.0.0",
+  "description": "WebTransport (over HTTP/3) echo server & client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/btwiuse/h3.git"
+  },
+  "author": "btwiuse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/btwiuse/h3/issues"
+  },
+  "homepage": "https://h3.k0s.io"
+}

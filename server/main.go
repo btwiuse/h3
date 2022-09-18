@@ -10,6 +10,7 @@ import (
 	"github.com/btwiuse/h3/utils"
 	"github.com/lucas-clemente/quic-go/http3"
 	"github.com/marten-seemann/webtransport-go"
+	"k0s.io/pkg/reverseproxy"
 )
 
 func makeServer(host, port, cert, key string) *Server {
@@ -76,7 +77,8 @@ func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "HTTP/3 OK", 200)
+	uiURL := "https://http3.vercel.app/"
+	reverseproxy.Handler(uiURL).ServeHTTP(w, r)
 }
 
 func echoConn(conn *webtransport.Session) {
@@ -107,7 +109,7 @@ func Run([]string) error {
 		utils.EnvCERT("localhost.pem"),
 		utils.EnvKEY("localhost-key.pem"),
 	)
-	s.Handle("/", ApplyMiddleware(http.HandlerFunc(s.handleRoot)))
+	s.Handle("/", http.HandlerFunc(s.handleRoot))
 	s.Handle("/echo", ApplyMiddleware(http.HandlerFunc(s.handleEcho)))
 	return s.ListenAndServeTLS()
 }

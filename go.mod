@@ -6,6 +6,7 @@ require (
 	github.com/btwiuse/multicall v0.0.0
 	github.com/lucas-clemente/quic-go v0.29.0
 	github.com/marten-seemann/webtransport-go v0.1.0
+	k0s.io/pkg/reverseproxy v0.1.6
 )
 
 require (
@@ -27,4 +28,5 @@ require (
 	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
+	k0s.io v0.1.6 // indirect
 )
