@@ -47,6 +47,8 @@ spec:
           value: h3.k0s.io
         - name: ALT_SVC
           value: h3=":444"
+        - name: UI
+          value: https://http3.vercel.app
         - name: CERT
           value: tls.crt
         - name: KEY

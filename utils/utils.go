@@ -36,3 +36,10 @@ func EnvAltSvc(fallback string) string {
 	}
 	return fallback
 }
+
+func EnvUI(fallback string) string {
+	if ui, ok := os.LookupEnv("UI"); ok {
+		return ui
+	}
+	return fallback
+}
