@@ -15,8 +15,8 @@ import (
 func Run([]string) error {
 	u := fmt.Sprintf(
 		"https://%s%s/echo",
-		utils.EnvHOST("localhost"),
-		utils.EnvPORT(":443"),
+		utils.EnvHost("localhost"),
+		utils.EnvPort(":443"),
 	)
 	ctx, _ := context.WithTimeout(context.TODO(), time.Second)
 	var d webtransport.Dialer

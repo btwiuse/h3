@@ -13,7 +13,7 @@ import (
 	"k0s.io/pkg/reverseproxy"
 )
 
-func makeServer(host, port, cert, key string) *Server {
+func makeServer(host, port, altsvc, cert, key string) *Server {
 	server := webtransport.Server{
 		H3: http3.Server{
 			Addr: port,
@@ -26,6 +26,7 @@ func makeServer(host, port, cert, key string) *Server {
 		Server: server,
 		Host:   host,
 		Port:   port,
+		AltSvc: altsvc,
 		Cert:   cert,
 		Key:    key,
 	}
@@ -34,10 +35,11 @@ func makeServer(host, port, cert, key string) *Server {
 type Server struct {
 	webtransport.Server
 
-	Host string
-	Port string
-	Cert string
-	Key  string
+	Host   string
+	Port   string
+	AltSvc string
+	Cert   string
+	Key    string
 }
 
 func (s *Server) ListenAndServeTLS() error {
@@ -62,8 +64,8 @@ func (s *Server) HandleFunc(path string, handler func(http.ResponseWriter, *http
 }
 
 func (s *Server) handleHTTP1(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Alt-Svc", fmt.Sprintf(`h3="%s"`, s.Port))
-	http.Error(w, "HTTP/1.1 OK", 200)
+	w.Header().Set("Alt-Svc", s.AltSvc)
+	http.Error(w, fmt.Sprintf("Alt-Svc: %s", s.AltSvc), 200)
 }
 
 func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
@@ -103,11 +105,13 @@ func ApplyMiddleware(next http.Handler) http.Handler {
 }
 
 func Run([]string) error {
-	s := makeServer(
-		utils.EnvHOST("localhost"),
-		utils.EnvPORT(":443"),
-		utils.EnvCERT("localhost.pem"),
-		utils.EnvKEY("localhost-key.pem"),
+	var (
+		host   = utils.EnvHost("localhost")
+		port   = utils.EnvPort(":443")
+		altsvc = utils.EnvAltSvc(fmt.Sprintf(`h3="%s"`, port))
+		cert   = utils.EnvCert("localhost.pem")
+		key    = utils.EnvKey("localhost-key.pem")
+		s      = makeServer(host, port, altsvc, cert, key)
 	)
 	s.Handle("/", http.HandlerFunc(s.handleRoot))
 	s.Handle("/echo", ApplyMiddleware(http.HandlerFunc(s.handleEcho)))
