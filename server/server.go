@@ -13,27 +13,20 @@ import (
 	"k0s.io/pkg/reverseproxy"
 )
 
-func makeServer(host, port, altsvc, cert, key string) *Server {
-	server := webtransport.Server{
-		H3: http3.Server{
-			Addr: port,
-		},
-		CheckOrigin: func(*http.Request) bool {
-			return true
-		},
-	}
-	return &Server{
-		Server: server,
+func NewServer(host, port, altsvc, cert, key string) *Server {
+	s := &Server{
 		Host:   host,
 		Port:   port,
 		AltSvc: altsvc,
 		Cert:   cert,
 		Key:    key,
 	}
+	s.server = s.webtransportServer()
+	return s
 }
 
 type Server struct {
-	webtransport.Server
+	server *webtransport.Server
 
 	Host   string
 	Port   string
@@ -42,7 +35,7 @@ type Server struct {
 	Key    string
 }
 
-func (s *Server) ListenAndServeTLS() error {
+func (s *Server) ListenAndServe() error {
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/", s.handleHTTP1)
@@ -50,17 +43,7 @@ func (s *Server) ListenAndServeTLS() error {
 		http.ListenAndServe(s.Port, mux)
 	}()
 	log.Printf("listening on https://%s%s (UDP)", s.Host, s.Port)
-	err := s.Server.ListenAndServeTLS(s.Cert, s.Key)
-	log.Fatalln(err)
-	return err
-}
-
-func (s *Server) Handle(path string, handler http.Handler) {
-	http.Handle(path, handler)
-}
-
-func (s *Server) HandleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
-	http.HandleFunc(path, handler)
+	return s.server.ListenAndServeTLS(s.Cert, s.Key)
 }
 
 func (s *Server) handleHTTP1(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +52,7 @@ func (s *Server) handleHTTP1(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
-	conn, err := s.Upgrade(w, r)
+	conn, err := s.server.Upgrade(w, r)
 	if err != nil {
 		log.Printf("upgrading failed: %s", err)
 		w.WriteHeader(500)
@@ -81,6 +64,24 @@ func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	uiURL := "https://http3.vercel.app/"
 	reverseproxy.Handler(uiURL).ServeHTTP(w, r)
+}
+
+func (s *Server) webtransportServer() *webtransport.Server {
+	return &webtransport.Server{
+		H3: http3.Server{
+			Addr:            s.Port,
+			Handler:         s.handler(),
+			EnableDatagrams: true,
+		},
+		CheckOrigin: func(*http.Request) bool { return true },
+	}
+}
+
+func (s *Server) handler() http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(s.handleRoot))
+	mux.Handle("/echo", applyMiddleware(http.HandlerFunc(s.handleEcho)))
+	return mux
 }
 
 func echoConn(conn *webtransport.Session) {
@@ -97,7 +98,7 @@ func echoConn(conn *webtransport.Session) {
 	}
 }
 
-func ApplyMiddleware(next http.Handler) http.Handler {
+func applyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println("[H3]", r.RemoteAddr, "->", r.URL.Path)
 		next.ServeHTTP(w, r)
@@ -111,9 +112,7 @@ func Run([]string) error {
 		altsvc = utils.EnvAltSvc(fmt.Sprintf(`h3="%s"`, port))
 		cert   = utils.EnvCert("localhost.pem")
 		key    = utils.EnvKey("localhost-key.pem")
-		s      = makeServer(host, port, altsvc, cert, key)
+		s      = NewServer(host, port, altsvc, cert, key)
 	)
-	s.Handle("/", http.HandlerFunc(s.handleRoot))
-	s.Handle("/echo", ApplyMiddleware(http.HandlerFunc(s.handleEcho)))
-	return s.ListenAndServeTLS()
+	return s.ListenAndServe()
 }
