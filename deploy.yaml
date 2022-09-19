@@ -1,11 +1,11 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: h3.k0s.io
+  name: ui.k0s.io
 spec:
-  secretName: h3.k0s.io
+  secretName: ui.k0s.io
   dnsNames:
-  - 'h3.k0s.io'
+  - 'ui.k0s.io'
   issuerRef:
     name: letsencrypt
     # We can reference ClusterIssuers by changing the kind here.
@@ -16,18 +16,18 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: h3
+  name: h3ui
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: h3
+      app: h3ui
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: h3
+        app: h3ui
     spec:
       containers:
       - args:
@@ -36,7 +36,7 @@ spec:
           h3 server
         ports:
         - containerPort: 4430
-          hostPort: 444
+          hostPort: 456
           protocol: UDP
         - containerPort: 4430
           protocol: TCP
@@ -44,11 +44,11 @@ spec:
         - name: PORT
           value: "4430"
         - name: HOST
-          value: h3.k0s.io
+          value: ui.k0s.io
         - name: ALT_SVC
-          value: h3=":444"
+          value: h3=":456"
         - name: UI
-          value: https://http3.vercel.app
+          value: https://k0s.io
         - name: CERT
           value: tls.crt
         - name: KEY
@@ -58,15 +58,15 @@ spec:
         - -c
         image: btwiuse/h3
         imagePullPolicy: Always
-        name: h3
+        name: h3ui
         volumeMounts:
         - mountPath: /h3
-          name: h3
+          name: h3ui
       restartPolicy: Always
       volumes:
       - secret:
-          secretName: h3.k0s.io
-        name: h3
+          secretName: ui.k0s.io
+        name: h3ui
       - hostPath:
           path: /
         name: chroot
@@ -74,7 +74,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: h3
+  name: h3ui
 spec:
   internalTrafficPolicy: Cluster
   ipFamilies:
@@ -83,17 +83,15 @@ spec:
   - port: 8000
     protocol: TCP
     targetPort: 4430
-    nodePort: 30444
     name: tcp
   - port: 4000
     protocol: UDP
     targetPort: 4430
-    nodePort: 30444
     name: udp
   selector:
-    app: h3
+    app: h3ui
   sessionAffinity: None
-  type: NodePort
+  type: ClusterIP
 ---
 # TODO How to make traefik ingress work with http3?
 apiVersion: networking.k8s.io/v1
@@ -101,20 +99,20 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
-  name: h3.k0s.io
+  name: ui.k0s.io
 spec:
   rules:
-  - host: h3.k0s.io
+  - host: ui.k0s.io
     http:
       paths:
       - backend:
           service:
-            name: h3
+            name: h3ui
             port:
               number: 8000
         path: /
         pathType: ImplementationSpecific
   tls:
   - hosts:
-    - h3.k0s.io
-    secretName: h3
+    - ui.k0s.io
+    secretName: h3ui
