@@ -13,24 +13,28 @@ import (
 	"k0s.io/pkg/reverseproxy"
 )
 
-func NewServer(host, port, altsvc, cert, key string) *Server {
+func NewServer(host, port, altsvc, ui, cert, key string) *Server {
 	s := &Server{
 		Host:   host,
 		Port:   port,
 		AltSvc: altsvc,
+		UI:     ui,
 		Cert:   cert,
 		Key:    key,
 	}
 	s.server = s.webtransportServer()
+	s.uiHandler = reverseproxy.Handler(s.UI)
 	return s
 }
 
 type Server struct {
-	server *webtransport.Server
+	server    *webtransport.Server
+	uiHandler http.Handler
 
 	Host   string
 	Port   string
 	AltSvc string
+	UI     string
 	Cert   string
 	Key    string
 }
@@ -62,8 +66,7 @@ func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
-	uiURL := "https://http3.vercel.app/"
-	reverseproxy.Handler(uiURL).ServeHTTP(w, r)
+	s.uiHandler.ServeHTTP(w, r)
 }
 
 func (s *Server) webtransportServer() *webtransport.Server {
@@ -110,9 +113,10 @@ func Run([]string) error {
 		host   = utils.EnvHost("localhost")
 		port   = utils.EnvPort(":443")
 		altsvc = utils.EnvAltSvc(fmt.Sprintf(`h3="%s"`, port))
+		ui     = utils.EnvUI("https://http3.vercel.app")
 		cert   = utils.EnvCert("localhost.pem")
 		key    = utils.EnvKey("localhost-key.pem")
-		s      = NewServer(host, port, altsvc, cert, key)
+		s      = NewServer(host, port, altsvc, ui, cert, key)
 	)
 	return s.ListenAndServe()
 }
