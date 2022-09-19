@@ -29,42 +29,24 @@ spec:
       labels:
         app: h3
     spec:
-      hostNetwork: true
-      initContainers:
-      - args:
-        - |
-          # k0s agent
-          chroot /chroot sysctl -w net.core.rmem_max=2500000
-        securityContext:
-          runAsUser: 0
-        command:
-        - bash
-        - -c
-        image: btwiuse/h3
-        name: h3-init
-        volumeMounts:
-        - mountPath: /chroot
-          name: chroot
       containers:
       - args:
         - |
           # k0s agent
           h3 server
         ports:
-        - containerPort: 443
-          hostPort: 443
+        - containerPort: 4430
+          hostPort: 444
           protocol: UDP
-        - containerPort: 443
+        - containerPort: 4430
           protocol: TCP
-      # securityContext:
-      #   sysctls:
-      #   - name: net.core.rmem_max
-      #     value: "2500000"
         env:
         - name: PORT
-          value: "443"
+          value: "4430"
         - name: HOST
           value: h3.k0s.io
+        - name: ALT_SVC
+          value: h3=":444"
         - name: CERT
           value: tls.crt
         - name: KEY
@@ -98,13 +80,13 @@ spec:
   ports:
   - port: 8000
     protocol: TCP
-    targetPort: 443
-    nodePort: 32443
+    targetPort: 4430
+    nodePort: 30444
     name: tcp
-  - port: 443
+  - port: 4000
     protocol: UDP
-    targetPort: 443
-    nodePort: 32443
+    targetPort: 4430
+    nodePort: 30444
     name: udp
   selector:
     app: h3
