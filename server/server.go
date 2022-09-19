@@ -52,7 +52,7 @@ func (s *Server) ListenAndServe() error {
 
 func (s *Server) handleHTTP1(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Alt-Svc", s.AltSvc)
-	http.Error(w, fmt.Sprintf("Alt-Svc: %s", s.AltSvc), 200)
+	s.uiHandler.ServeHTTP(w, r)
 }
 
 func (s *Server) handleEcho(w http.ResponseWriter, r *http.Request) {
