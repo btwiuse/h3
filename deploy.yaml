@@ -1,11 +1,11 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: ui.k0s.io
+  name: app.k0s.io
 spec:
-  secretName: ui.k0s.io
+  secretName: app.k0s.io
   dnsNames:
-  - 'ui.k0s.io'
+  - 'app.k0s.io'
   issuerRef:
     name: letsencrypt
     # We can reference ClusterIssuers by changing the kind here.
@@ -16,18 +16,18 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: h3ui
+  name: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: h3ui
+      app: app
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: h3ui
+        app: app
     spec:
       containers:
       - args:
@@ -36,7 +36,7 @@ spec:
           h3 server
         ports:
         - containerPort: 4430
-          hostPort: 456
+          hostPort: 457
           protocol: UDP
         - containerPort: 4430
           protocol: TCP
@@ -44,9 +44,9 @@ spec:
         - name: PORT
           value: "4430"
         - name: HOST
-          value: ui.k0s.io
+          value: app.k0s.io
         - name: ALT_SVC
-          value: h3=":456"
+          value: h3=":457"
         - name: UI
           value: https://k0s.io
         - name: CERT
@@ -58,15 +58,15 @@ spec:
         - -c
         image: btwiuse/h3
         imagePullPolicy: Always
-        name: h3ui
+        name: app
         volumeMounts:
         - mountPath: /h3
-          name: h3ui
+          name: app
       restartPolicy: Always
       volumes:
       - secret:
-          secretName: ui.k0s.io
-        name: h3ui
+          secretName: app.k0s.io
+        name: app
       - hostPath:
           path: /
         name: chroot
@@ -74,7 +74,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: h3ui
+  name: app
 spec:
   internalTrafficPolicy: Cluster
   ipFamilies:
@@ -89,7 +89,7 @@ spec:
     targetPort: 4430
     name: udp
   selector:
-    app: h3ui
+    app: app
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -99,20 +99,20 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
-  name: ui.k0s.io
+  name: app.k0s.io
 spec:
   rules:
-  - host: ui.k0s.io
+  - host: app.k0s.io
     http:
       paths:
       - backend:
           service:
-            name: h3ui
+            name: app
             port:
               number: 8000
         path: /
         pathType: ImplementationSpecific
   tls:
   - hosts:
-    - ui.k0s.io
-    secretName: h3ui
+    - app.k0s.io
+    secretName: k0s
