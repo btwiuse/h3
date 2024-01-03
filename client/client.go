@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/btwiuse/h3/utils"
-	"github.com/webtransport/webtransport-go"
+	"github.com/quic-go/webtransport-go"
 )
 
 func Run([]string) error {

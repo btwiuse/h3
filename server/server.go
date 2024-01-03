@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/btwiuse/h3/utils"
-	"github.com/webtransport/quic-go/http3"
-	"github.com/webtransport/webtransport-go"
+	"github.com/quic-go/quic-go/http3"
+	"github.com/quic-go/webtransport-go"
 	"k0s.io/pkg/reverseproxy"
 )
 
