@@ -10,7 +10,7 @@ import (
 	"github.com/btwiuse/h3/utils"
 	"github.com/quic-go/quic-go/http3"
 	"github.com/quic-go/webtransport-go"
-	"k0s.io/pkg/reverseproxy"
+	wtfutils "github.com/webteleport/utils"
 )
 
 func NewServer(host, port, altsvc, ui, cert, key string) *Server {
@@ -23,7 +23,7 @@ func NewServer(host, port, altsvc, ui, cert, key string) *Server {
 		Key:    key,
 	}
 	s.server = s.webtransportServer()
-	s.uiHandler = reverseproxy.Handler(s.UI)
+	s.uiHandler = wtfutils.ReverseProxy(s.UI)
 	return s
 }
 
