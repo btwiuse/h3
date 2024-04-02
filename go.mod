@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/btwiuse/multicall v0.0.4
-	github.com/quic-go/quic-go v0.41.0
+	github.com/quic-go/quic-go v0.42.0
 	github.com/quic-go/webtransport-go v0.6.0
 	github.com/webteleport/utils v0.2.2
 )
@@ -21,7 +21,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.12.0 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/rs/cors v1.10.1 // indirect
-	go.uber.org/mock v0.3.0 // indirect
+	go.uber.org/mock v0.4.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a // indirect
 	golang.org/x/mod v0.14.0 // indirect
