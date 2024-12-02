@@ -4,7 +4,7 @@ go 1.23.2
 
 require (
 	github.com/btwiuse/multicall v0.0.5
-	github.com/quic-go/quic-go v0.48.1
+	github.com/quic-go/quic-go v0.48.2
 	github.com/quic-go/webtransport-go v0.8.1-0.20241018022711-4ac2c9250e66
 	github.com/webteleport/utils v0.2.16
 )
